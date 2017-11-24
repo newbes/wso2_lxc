@@ -1,0 +1,37 @@
+---
+  - name: check if python installed
+    delegate_to: "{{item}}"
+    connection: local
+    raw: python --version
+    register: python_install_check
+#    failed_when: python_install_check.rc not in [0, 1]
+    ignore_errors: yes
+    changed_when: false
+    register: python_check_is_installed
+    with_items:
+    - "{{groups['infrastructure_lxc']}}"
+
+ # - name: install python yum
+ #   delegate_to: "{{item.item}}"
+ #   raw: yum -y install python-simplejson
+ #   with_items:
+ #     - "{{python_check_is_installed.results}}"
+
+  - name: set authorized_keys
+    delegate_to: "{{item}}"
+    authorized_key:
+      user: root
+      state: present
+      key: "{{ public_key }}"
+    when: public_key is defined
+    with_items:
+      - "{{groups['infrastructure_lxc']}}"
+
+  - name: install openssh-server
+    delegate_to: "{{item}}"
+    package:
+      name: openssh-server
+      state: latest
+      use: yum
+    with_items:
+      - "{{groups['infrastructure_lxc']}}"

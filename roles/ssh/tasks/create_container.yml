@@ -1,0 +1,16 @@
+    - name: Create a started container
+      connection: local
+      lxd_container:
+        name: '{{item}}'
+        state: started
+        source:
+          type: image
+          mode: pull
+          server: https://images.linuxcontainers.org
+          protocol: lxd
+          alias: centos/7/amd64
+        profiles: ["default"]
+        wait_for_ipv4_addresses: true
+        timeout: 600
+      with_items:
+        - "{{groups['infrastructure_lxc']}}"
